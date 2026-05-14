@@ -1,0 +1,278 @@
+:root {
+  --bg: #fef2f2;
+  --surface: #ffffff;
+  --surface-strong: #ffe4e6;
+  --text: #1f2937;
+  --text-muted: #4b5563;
+  --accent: #dc2626;
+  --accent-strong: #991b1b;
+  --border: #d1d5db;
+  --danger: #dc2626;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.4rem 2rem;
+  background: linear-gradient(90deg, #991b1b 0%, #dc2626 100%);
+  color: white;
+}
+
+.app-header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-header img.logo {
+  height: 45px;
+  object-fit: contain;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
+}
+
+.app-header p {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-chip {
+  padding: 0.55rem 0.9rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  font-size: 0.95rem;
+}
+
+.app-main {
+  flex: 1;
+  padding: 2rem;
+}
+
+.login-pane,
+.dashboard-grid {
+  max-width: 1180px;
+  margin: 0 auto;\n}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.6rem;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.6rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-grid label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button.btn-primary {
+  padding: 0.95rem 1.35rem;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+}
+
+button.btn-secondary,
+button.link-button {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+}
+
+button.btn-secondary.status-active,
+button.nav-active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+button.link-button {
+  margin-bottom: 1rem;
+  color: var(--accent-strong);
+  border-color: transparent;
+}
+
+.error-text {
+  margin: 0;
+  color: var(--danger);
+}
+
+.hint-box {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  color: var(--text-muted);
+}
+
+.hint-box ul {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0 0;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin: 1.6rem 0;
+}
+
+.metric-card {
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+}
+
+.metric-card strong {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.sidebar {
+  width: 230px;
+  min-width: 220px;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.content-area {
+  flex: 1;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: var(--surface-strong);
+}
+
+th,
+td {
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.timeline li {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-summary {
+  background: var(--surface-strong);
+  padding: 1rem;
+  border-radius: 14px;
+}
+
+@media (max-width: 980px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+}
