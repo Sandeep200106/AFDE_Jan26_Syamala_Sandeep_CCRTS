@@ -4,21 +4,23 @@ const defaultUsers = [
   { id: 1, name: 'Admin User', email: 'admin@prodapt.com', empNo: '1001', role: 'Admin', password: 'admin123' },
   { id: 2, name: 'Support Agent', email: 'agent@prodapt.com', empNo: '1002', role: 'Support Agent', password: 'agent123' },
   { id: 3, name: 'Supervisor', email: 'supervisor@prodapt.com', empNo: '1003', role: 'Supervisor', password: 'super123' },
-  { id: 4, name: 'Sandeep', email: 'Sandeep@prodapt.com', empNo: '1004', role: 'Employee', password: 'Sandeep123' }
+  { id: 4, name: 'Sandeep', email: 'Sandeep@prodapt.com', empNo: '1004', role: 'Employee', password: 'Sandeep123' },
+  { id: 5, name: 'reddy', email: 'reddy@prodapt.com', empNo: '1005', role: 'Employee', password: 'reddy123' },
+ 
 ];
 
 const categories = [
-  'Billing Issues',
-  'Service Disruption',
-  'Product Defects',
-  'Technical Problems',
-  'Delivery Delays',
-  'Account Issues',
-  'Customer Service Complaints',
+  'Hardware Issue',
+  'Software Installation/Update',
+  'Network & Connectivity',
+  'Access & Permissions',
+  'Password Reset',
+  'System Outage',
+  'Email Issues',
 ];
 
 const priorities = ['Low', 'Medium', 'High', 'Critical'];
-const statuses = ['Open', 'Assigned', 'In Progress', 'Pending Customer Response', 'Escalated', 'Resolved', 'Closed'];
+const statuses = ['Open', 'Assigned', 'In Progress', 'Pending Manager Response', 'Escalated', 'Resolved', 'Closed'];
 
 function App() {
   const [user, setUser] = useState(null);
@@ -27,10 +29,11 @@ function App() {
   const [complaints, setComplaints] = useState([]);
   const [activeComplaint, setActiveComplaint] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [defaultSla, setDefaultSla] = useState(48); // Default SLA in hours
   const [newComplaint, setNewComplaint] = useState({
     customerName: '',
     contact: '',
-    category: categories[0],
+    category: '',
     priority: priorities[1],
     description: '',
   });
@@ -52,14 +55,6 @@ function App() {
     return complaints;
   };
 
-  const canAccessFeature = (feature) => {
-    if (user.role === 'Admin' || user.role === 'Supervisor') return true;
-    if (user.role === 'Employee') {
-      return ['dashboard', 'complaints', 'newComplaint', 'feedback'].includes(feature);
-    }
-    return false;
-  };
-
   const handleLogin = (event) => {
     event.preventDefault();
     const form = event.target;
@@ -73,18 +68,28 @@ function App() {
     }
     setAuthError('');
     setUser(found);
+    setNewComplaint((prev) => ({ ...prev, customerName: found.name }));
     setView('dashboard');
   };
 
   const handleLogout = () => {
     setUser(null);
+    setNewComplaint({
+      customerName: '',
+      contact: '',
+      category: '',
+      priority: priorities[1],
+      description: '',
+    });
     setView('dashboard');
   };
 
   const handleAddComplaint = (event) => {
     event.preventDefault();
     const id = `CCR-${String(complaints.length + 1).padStart(5, '0')}`;
-    const createdDate = new Date().toLocaleString();
+    const now = new Date();
+    const createdDate = now.toLocaleString();
+    const slaDeadline = new Date(now.getTime() + defaultSla * 60 * 60 * 1000).toLocaleString();
     const complaint = {
       id,
       ...newComplaint,
@@ -97,14 +102,16 @@ function App() {
       history: [
         { date: createdDate, actor: newComplaint.customerName || user?.name || 'Customer', status: 'Open', note: 'Complaint registered' },
       ],
+      slaHours: defaultSla,
+      slaDeadline,
       slaBreach: false,
       feedback: '',
     };
     setComplaints((current) => [complaint, ...current]);
     setNewComplaint({
-      customerName: '',
+      customerName: user?.name || '',
       contact: '',
-      category: categories[0],
+      category: '',
       priority: priorities[1],
       description: '',
     });
@@ -165,11 +172,9 @@ function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div>
-          <img className="logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Ctext x='10' y='45' font-size='40' font-weight='bold' fill='white' font-family='Arial, sans-serif'%3EProdapt%3C/text%3E%3C/svg%3E" alt="Prodapt Logo" />
-          <div>
-            <h1>IT Support Services</h1>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img className="logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 155 60'%3E%3Ctext x='0' y='45' font-size='40' font-weight='bold' fill='white' font-family='Arial, sans-serif'%3EProdapt%3C/text%3E%3C/svg%3E" alt="Prodapt Logo" />
+          <h1 style={{ margin: 0 }}>IT Support Services</h1>
         </div>
         <div className="header-actions">
           {user && <span className="user-chip">{user.name} • EMP: {user.empNo} • {user.role}</span>}
@@ -210,6 +215,9 @@ function App() {
                 {(user.role === 'Admin' || user.role === 'Supervisor') && (
                   <button className={view === 'feedback' ? 'nav-active' : ''} onClick={() => setView('feedback')}>Feedback</button>
                 )}
+                {user.role === 'Admin' && (
+                  <button className={view === 'settings' ? 'nav-active' : ''} onClick={() => setView('settings')}>Settings</button>
+                )}
               </nav>
             </aside>
 
@@ -241,27 +249,30 @@ function App() {
                   <h2>Register New Complaint</h2>
                   <form onSubmit={handleAddComplaint} className="form-grid">
                     <label>
-                      Customer Name
+                      Customer Name <span style={{ color: 'red', position: 'relative', top: '-0.5em', marginLeft: '2px' }}>*</span>
                       <input
                         value={newComplaint.customerName}
-                        onChange={(e) => setNewComplaint({ ...newComplaint, customerName: e.target.value })}
+                        readOnly
                         required
                       />
                     </label>
                     <label>
-                      Contact Details
+                      Contact Number <span style={{ color: 'red', position: 'relative', top: '-0.5em', marginLeft: '2px' }}>*</span>
                       <input
+                        type="tel"
                         value={newComplaint.contact}
-                        onChange={(e) => setNewComplaint({ ...newComplaint, contact: e.target.value })}
+                        onChange={(e) => setNewComplaint({ ...newComplaint, contact: e.target.value.replace(/\D/g, '') })}
                         required
                       />
                     </label>
                     <label>
-                      Category
+                      Category <span style={{ color: 'red', position: 'relative', top: '-0.5em', marginLeft: '2px' }}>*</span>
                       <select
                         value={newComplaint.category}
                         onChange={(e) => setNewComplaint({ ...newComplaint, category: e.target.value })}
+                    required
                       >
+                    <option value="" disabled>Select a category</option>
                         {categories.map((category) => (
                           <option key={category} value={category}>{category}</option>
                         ))}
@@ -279,7 +290,7 @@ function App() {
                       </select>
                     </label>
                     <label className="full-width">
-                      Description
+                      Description <span style={{ color: 'red', position: 'relative', top: '-0.5em', marginLeft: '2px' }}>*</span>
                       <textarea
                         value={newComplaint.description}
                         onChange={(e) => setNewComplaint({ ...newComplaint, description: e.target.value })}
@@ -346,7 +357,7 @@ function App() {
                       <p>{activeComplaint.customerName}</p>
                     </div>
                     <div>
-                      <strong>Contact</strong>
+                      <strong>Contact Number</strong>
                       <p>{activeComplaint.contact}</p>
                     </div>
                     <div>
@@ -356,6 +367,10 @@ function App() {
                     <div>
                       <strong>Priority</strong>
                       <p>{activeComplaint.priority}</p>
+                    </div>
+                    <div>
+                      <strong>SLA Deadline</strong>
+                      <p>{activeComplaint.slaDeadline || 'N/A'}</p>
                     </div>
                     <div>
                       <strong>Status</strong>
@@ -411,6 +426,28 @@ function App() {
                   <p>Feedback collection and satisfaction rating support will be available in later sprints.</p>
                   <div className="panel-summary">
                     <p>Use the complaint details screen to review status history and escalation notes.</p>
+                  </div>
+                </div>
+              )}
+
+              {view === 'settings' && user.role === 'Admin' && (
+                <div className="panel">
+                  <h2>Settings</h2>
+                  <form onSubmit={(e) => { e.preventDefault(); alert('Settings saved successfully!'); }} className="form-grid">
+                    <label>
+                      Default SLA (Hours)
+                      <input
+                        type="number"
+                        value={defaultSla}
+                        onChange={(e) => setDefaultSla(Number(e.target.value))}
+                        min="1"
+                        required
+                      />
+                    </label>
+                    <button type="submit" className="btn-primary">Save Settings</button>
+                  </form>
+                  <div className="panel-summary" style={{ marginTop: '1rem' }}>
+                    <p>New complaints will be assigned this default SLA.</p>
                   </div>
                 </div>
               )}
